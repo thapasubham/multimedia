@@ -1,61 +1,51 @@
-import cv2 as cv
+import cv2
 import numpy as np
 
-cap = cv.VideoCapture(0)
-if not cap.isOpened():
-    print("Cannot open camera")
-    exit()
-
-prev_frame = None   # Previous processed frame
-prev1_frame = None  # Frame before prev_frame (two-frames ago)
-
-while True:
+cap = cv2.VideoCapture("ace.mp4")
+fps = cap.get(cv2.CAP_PROP_FPS)
+delay = int(100 / fps)
+i = 1
+while cap.isOpened():
     ret, frame = cap.read()
     if not ret:
-        print("Can't receive frame. Exiting ...")
         break
 
-    # Initialize prev_frame and prev1_frame
-    if prev_frame is None:
-        prev_frame = frame.copy()
-        continue
-    if prev1_frame is None:
-        prev1_frame = prev_frame.copy()
-        continue
+    # Convert to HSV for color manipulation
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
- 
-    temp = cv.addWeighted(frame, 0.5, frame, 0.6, 0)
+    # Random hue shift amount between -20 and 20
+    hue_shift = random.randint(-20, 20)
 
-    temp1 = cv.addWeighted(frame, 0.5, prev1_frame, 0.6, 0)
+    # Apply hue shift and wrap around with modulo 180 (hue range)
+    hsv[:, :, 0] = (hsv[:, :, 0].astype(int) + hue_shift) % 180
 
-    blended = cv.addWeighted(temp1, 0.5, prev_frame, 0.5, 0)
-   
-    #split the rgb channels
-    b, g, r = cv.split(blended)
-    bT, gT, rT = cv.split(temp1)
-    b2, g2, r2 = cv.split(temp)
+  
 
-    #perform operation in the rgb channels
-    rV = cv.bitwise_or(r, rT)
-    bV = cv.bitwise_xor(b, bT)
-    gV = cv.bitwise_or(g, gT)
+    # Enemy color mask (red detection)
+    lower_red1 = np.array([0, 120, 70])
+    upper_red1 = np.array([10, 255, 255])
+    lower_red2 = np.array([170, 120, 70])
+    upper_red2 = np.array([180, 255, 255])
 
-    r_mix = cv.bitwise_or(rV,r2)
-    b_mix = cv.bitwise_or(bV, b2)
-    g_mix = cv.bitwise_or(gV, g2)
+    mask1 = cv2.inRange(hsv, lower_red1, upper_red1)
+    mask2 = cv2.inRange(hsv, lower_red2, upper_red2)
+    mask = mask1 + mask2
 
-    #merge the rgb channels
-    merge1 = cv.merge((b, gT,r2))
-    final = cv.merge((bT,g_mix,r_mix))
+    contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-    #copy the frame data 
-    prev1_frame = prev_frame.copy()
-    prev_frame = merge1.copy()
+    for cnt in contours:
+        if cv2.contourArea(cnt) > 5000:
+            x, y, w, h = cv2.boundingRect(cnt)
+            # Draw rectangles on the hue-shifted frame
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 2, 255), 3)
+            cv2.putText(frame, "ENEMY", (x, y - 10),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 2, 255), 2)
 
-    cv.imshow('merge1', merge1)
-    cv.imshow("final", final)
-    if cv.waitKey(1) == ord('q'):
+    cv2.imshow("Trippy Enemy Detector", frame)
+    cv2.imwrite(f"ace/frame_{i}.jpg", frame)
+    i += 1
+    if cv2.waitKey(delay) == ord('q'):
         break
 
 cap.release()
-cv.destroyAllWindows()
+cv2.destroyAllWindows()
