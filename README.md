@@ -5,3 +5,14 @@
 - Python
 - OpenCV
 
+### You have to run each scripts individually. 
+You can do it by following
+
+First make sure you are inside the src directory
+```
+ cd src 
+```
+Make sure the image exists with the name that inside the files, after that just run 
+```
+python <filename>
+```
