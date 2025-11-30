@@ -1,39 +1,37 @@
 import cv2
 import numpy as np
 
-# Read image
-#replace the images name or it wont work
-image = cv2.imread('the.png')
+image = cv2.imread('hill.png')
+image1 = cv2.imread('death.png')
+image2 = cv2.imread('thing.png')
+
+if image is None or image1 is None or image2 is None:
+    print("Error: One or more images could not be loaded. Check the file paths.")
+    exit()
+
 original = image.copy()
-image1 = cv2.imread('food.png')
-original3= image1.copy()
-image2= cv2.imread("Death.png")
+original3 = image1.copy()
 original2 = image2.copy()
-img = cv2.GaussianBlur(original2, (5, 5), 5)
+
+target_size = (image.shape[1], image.shape[0])  
+image1 = cv2.resize(image1, target_size)
+image2 = cv2.resize(image2, target_size)
+
+img_blur = cv2.GaussianBlur(image2, (5, 5), 10)
 
 
-# Split channels (BGR order)
 b, g, r = cv2.split(image)
-b1,g1,r1=cv2.split(img)
-b2,g2,r2=cv2.split(original3)
+b1, g1, r1 = cv2.split(img_blur)
+b2, g2, r2 = cv2.split(image1)
 
-# Boost red channel
-r = np.clip((r1|r2)-(2|g1) + 40, 0, 255).astype(np.uint8)
+rV = cv2.bitwise_xor(r, g1)
+bV = cv2.bitwise_xor(b2, g1)
+gV = cv2.bitwise_xor(g, b2)
 
-# Bitwise OR between red and blue
-b = np.clip(r1| b2, 0, 255).astype(np.uint8)
 
-# Avoid division by zero
-b_safe = b.copy().astype(np.float32)
-b_safe[b_safe == 0] = 1.0
+result_img = cv2.merge((bV, gV, rV))
 
-# Compute new green channel
-g_zero = np.clip((r1.astype(np.float32) + g1.astype(np.float32)) / b_safe, 0, 255).astype(np.uint8)
-
-# merge the split BGR channel
-img = cv2.merge((b2, g, r1))
-
-cv2.imshow('Custom Manipulation', img)
-cv2.imwrite("thing.png", img)
+cv2.imshow('Custom Manipulation', result_img)
+cv2.imwrite("thing.png", result_img)
 cv2.waitKey(0)
 cv2.destroyAllWindows()

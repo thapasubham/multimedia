@@ -4,7 +4,7 @@ import numpy as np
 #replace the image name
 image = cv2.imread('death.png')
 image1 = cv2.imread('the.png')
-image2 = cv2.imread("eyes.png")
+image2 = cv2.imread("hill.png")
 
 # Resize all images to the first image size
 image1 = cv2.resize(image1, (image.shape[1], image.shape[0]))
@@ -29,7 +29,7 @@ g_mix = np.clip((r.astype(np.float32) + g.astype(np.float32)) / b_safe, 0, 255).
 r_avg = np.clip((r_mix.astype(np.float32) + r1 + r) / 3, 0, 255).astype(np.uint8)
 
 # Merge all fused channels in BGR order
-output = cv2.merge(( b_mix, g_mix,r_mix))
+output = cv2.merge(( b1, g2,r))
 
 cv2.imshow('epic fusion', output)
 cv2.imwrite("epic122.png", output)

@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-
+import random
 cap = cv2.VideoCapture("ace.mp4")
 fps = cap.get(cv2.CAP_PROP_FPS)
 delay = int(100 / fps)
@@ -42,7 +42,6 @@ while cap.isOpened():
                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 2, 255), 2)
 
     cv2.imshow("Trippy Enemy Detector", frame)
-    cv2.imwrite(f"ace/frame_{i}.jpg", frame)
     i += 1
     if cv2.waitKey(delay) == ord('q'):
         break

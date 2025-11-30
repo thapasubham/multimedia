@@ -4,23 +4,26 @@ import matplotlib.pyplot as plt
 from scipy.io.wavfile import write
 
 # Parameters
-duration = 10  # seconds
-sampling_rate = 140000 # samples per second
+duration = 30 
+sampling_rate = 140000  
 
 print("Recording...")
 
-# Record audio
-audio = sd.rec(int(duration * sampling_rate), samplerate=sampling_rate, channels=1, dtype='float64')
+audio = sd.rec(int(duration * sampling_rate), samplerate=sampling_rate, channels=2, dtype='float64')
 sd.wait()
 
 print("Recording complete.")
 
-# Flatten the audio to 1D
-audio = audio.flatten()
+# Time axis for time-domain plot
+time = np.linspace(0, duration, audio.shape[0])
+# Convert float audio to int16 for saving
+max_val = np.max(np.abs(audio))
+audio_int16 = np.int16(audio / max_val * 32767)
+write("recording.wav", sampling_rate, audio_int16)
 
-# Time axis
-time = np.linspace(0, duration, len(audio))
+print("Saved as recording.wav")
 
+# Plot time-domain signal
 plt.figure(figsize=(12, 4))
 plt.plot(time, audio)
 plt.title("Time Domain - Audio Signal")
@@ -30,21 +33,20 @@ plt.grid(True)
 plt.tight_layout()
 plt.show()
 
-write("recording.wav", sampling_rate, audio)
-print("Saved as recording.wav")
 
 
+# FFT for frequency-domain analysis
 n = len(audio)
 audio_fft = np.fft.fft(audio)
 frequencies = np.fft.fftfreq(n, d=1/sampling_rate)
 magnitude = np.abs(audio_fft) / n
 
-# Plot only positive frequencies
+# Only positive frequencies
 mask = frequencies >= 0
 frequencies = frequencies[mask]
 magnitude = magnitude[mask]
 
-# Plot Frequency Domain
+# Plot frequency-domain signal
 plt.figure(figsize=(12, 4))
 plt.plot(frequencies, magnitude)
 plt.title("Frequency Domain - Magnitude Spectrum")

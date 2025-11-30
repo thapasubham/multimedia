@@ -3,7 +3,7 @@ import numpy as np
 
 # replace the image name 
 
-image = cv2.imread('the.png')
+image = cv2.imread('image.png')
 original = image.copy()
 image = cv2.resize(image, (1280,720))
 
