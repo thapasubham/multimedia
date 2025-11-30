@@ -2,3 +2,6 @@
 *.png
 *.docx
 .vscode
+*.wav
+*.mp4
+/vevn
